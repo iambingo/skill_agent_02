@@ -220,27 +220,74 @@ class SkillAgentTool(Tool):
             skills_count = len(skills_index.get("skills") or []) if isinstance(skills_index, dict) else 0
         except Exception:
             skills_count = 0
+        # Handle optional skill_name parameter (bypass LLM skill selection)
+        skill_name_param = str(tool_parameters.get("skill_name") or "").strip()
+        preselected_skill_folder: str | None = None
+        if skill_name_param:
+            available_skills: list[dict[str, Any]] = (
+                skills_index.get("skills") or [] if isinstance(skills_index, dict) else []
+            )
+            matched: dict[str, Any] | None = None
+            for s in available_skills:
+                if (
+                    str(s.get("name") or "") == skill_name_param
+                    or str(s.get("folder") or "") == skill_name_param
+                ):
+                    matched = s
+                    break
+            if matched is None:
+                available_names = [
+                    str(s.get("name") or s.get("folder") or "") for s in available_skills
+                ]
+                names_str = ", ".join(available_names) if available_names else "(无)"
+                yield self.create_text_message(
+                    f"❌ 指定的技能「{skill_name_param}」在当前项目中不存在。\n"
+                    f"当前可用技能：{names_str}\n"
+                )
+                return
+            preselected_skill_folder = str(
+                matched.get("folder") or matched.get("name") or ""
+            ).strip()
+            # Pre-load metadata to satisfy progressive disclosure gate checks
+            runtime.get_skill_metadata(preselected_skill_folder)
+            # Filter skills index to only expose the preselected skill
+            skills_index = {"root": skills_index.get("root"), "skills": [matched]}
+
         _dbg(
             "start "
             + _model_brief(model)
             + f" session_dir={session_dir} skills_root={skills_root!s} skills_count={skills_count} "
             + f"query_len={len(query)}"
         )
+        if preselected_skill_folder:
+            progressive_disclosure_rules = (
+                f"【技能已预先指定】系统已为你锁定技能：《{skill_name_param}》（folder: {preselected_skill_folder}），其元数据已预加载。\n"
+                + "你必须仅使用该技能，忽略技能索引中的其他技能，并直接按以下步骤执行：\n"
+                + f"1) 调用 list_skill_files({preselected_skill_folder!r}) 查看技能包目录结构\n"
+                + "2) 按需调用 read_skill_file 读取具体文件\n"
+                + "3) 按说明书内容执行脚本/命令（run_skill_command）\n"
+                + "4) 生成最终文件后用 export_temp_file 标记交付\n"
+            )
+        else:
+            progressive_disclosure_rules = (
+                "你必须遵循渐进式披露流程：\n"
+                + "1) 只根据技能元数据（name/description）判断可能相关的技能\n"
+                + "2) 触发时才调用 get_skill_metadata 读取 SKILL.md（说明文档）\n"
+                + "3) 任何对技能的进一步操作（list_skill_files/read_skill_file/run_skill_command）之前，必须先 get_skill_metadata；若未执行，本系统会拒绝该调用并要求你先补读说明书。\n"
+                + "4) 按说明书内容执行脚本/命令，或进一步搜索资料前，必须先调用 list_skill_files 查看技能包的目录结构，以确保在正确的目录执行命令。\n"
+                + "5) 只有在需要更深信息时，才调用 read_skill_file\n"
+                + "6) 只有在明确需要执行脚本/命令时，才调用 run_skill_command\n"
+                + "7) 执行前必须先确认技能包内确实存在可执行入口（脚本/模块等），不要猜测模块名；如果缺少可执行入口，则先交付当前可交付产物，并询问用户是否允许你在 temp 目录中自行创建脚本后再尝试生成。\n"
+                + "8) 按说明书要求生成最终文件后，必须用 export_temp_file 标记最终文件\n"
+            )
+
         system_content = (
             system_prompt.strip()
             + "\n\n你是一个使用 Skills 文件夹作为“工具箱”的通用型 Agent。\n"
             + "\n[会话路径]\n"
             + f"- session_dir: {session_dir}\n"
             + f"- skills_root: {skills_root}\n"
-            + "你必须遵循渐进式披露流程：\n"
-            + "1) 只根据技能元数据（name/description）判断可能相关的技能\n"
-            + "2) 触发时才调用 get_skill_metadata 读取 SKILL.md（说明文档）\n"
-            + "3) 任何对技能的进一步操作（list_skill_files/read_skill_file/run_skill_command）之前，必须先 get_skill_metadata；若未执行，本系统会拒绝该调用并要求你先补读说明书。\n"
-            + "4) 按说明书内容执行脚本/命令，或进一步搜索资料前，必须先调用 list_skill_files 查看技能包的目录结构，以确保在正确的目录执行命令。\n"
-            + "5) 只有在需要更深信息时，才调用 read_skill_file\n"
-            + "6) 只有在明确需要执行脚本/命令时，才调用 run_skill_command\n"
-            + "7) 执行前必须先确认技能包内确实存在可执行入口（脚本/模块等），不要猜测模块名；如果缺少可执行入口，则先交付当前可交付产物，并询问用户是否允许你在 temp 目录中自行创建脚本后再尝试生成。\n"
-            + "8) 按说明书要求生成最终文件后，必须用 export_temp_file 标记最终文件\n"
+            + progressive_disclosure_rules
             + "路径规则：uploads/ 与你用 write_temp_file 生成的中间产物都位于 session_dir 下；run_skill_command 的 cwd 在 skills_root/<skill_name> 下。\n"
             + "因此：只要命令参数需要引用 uploads/ 或 temp 中间文件，一律使用 read_temp_file 返回的绝对路径（result.path）传给命令；不要使用 ../uploads、../../temp 这类相对路径猜测。\n"
             + "依赖安装规则：如需 npm install/npm ci/bun install，必须用 run_skill_command 在技能包内含 package.json 的目录执行（通过 cwd_relative 指到该目录）；禁止在 session_dir 执行 install，否则会写入 temp/<session>/node_modules 导致每次会话重复安装。\n"

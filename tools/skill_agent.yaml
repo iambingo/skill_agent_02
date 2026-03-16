@@ -30,6 +30,22 @@ parameters:
     llm_description: "please input your question"
     form: llm
 
+  - name: skill_name
+    type: string
+    required: false
+    label:
+      en_US: Skill Name
+      zh_Hans: 指定技能
+      pt_BR: Nome da Skill
+      ja_JP: スキル名
+    human_description:
+      en_US: "Optional. Directly specify the skill name to use, bypassing LLM skill selection. Returns an error if the skill is not found in the current project."
+      zh_Hans: "选填。直接指定使用的技能名称，跳过 LLM 技能自动选择。若填写的技能不在当前项目中则报错。"
+      pt_BR: "Opcional. Especifique diretamente o nome do skill a usar, ignorando a seleção pelo LLM. Retorna erro se o skill não existir no projeto."
+      ja_JP: "省略可。使用するスキル名を直接指定し、LLMによるスキル選択をスキップします。指定したスキルが存在しない場合はエラーを返します。"
+    llm_description: "Optional. Directly specify the skill name to use, bypassing LLM skill selection."
+    form: llm
+
   - name: files
     type: files
     required: false
