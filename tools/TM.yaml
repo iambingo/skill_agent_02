@@ -1,0 +1,64 @@
+identity:
+  name: "tm"
+  author: "lfenghx"
+  label:
+    en_US: "skill manager_dev"
+    zh_Hans: "技能管理_dev"
+    pt_BR: "skill manager_dev"
+    ja_JP: "skill manager_dev"
+description:
+  human:
+    en_US: "Manage local skill packages (add/delete/list/download)."
+    zh_Hans: "管理本地 skills 技能包：新增/删除/查看/下载"
+    pt_BR: "Gerenciar pacotes de habilidades locais (adicionar/remover/visualizar/baixar)."
+    ja_JP: "ローカルのスキルパッケージを管理（追加/削除/表示/ダウンロード）"
+  llm: "Manage local skill packages (add/delete/list/download)"
+parameters:
+  - name: project_name
+    type: string
+    required: true
+    label:
+      en_US: Project Name
+      zh_Hans: 项目名称
+      pt_BR: Project Name
+      ja_JP: プロジェクト名
+    human_description:
+      en_US: "Project name used to namespace skills. Each project has its own isolated set of skills."
+      zh_Hans: "项目名称，用于隔离不同项目的技能包，不同项目的技能互相独立"
+      pt_BR: "Nome do projeto para isolar os pacotes de habilidades."
+      ja_JP: "プロジェクト名。スキルを分離するために使用します。"
+    llm_description: "Project name to namespace skills"
+    form: form
+  - name: command
+    type: string
+    required: true
+    label:
+      en_US: Command
+      zh_Hans: 命令
+      pt_BR: Command
+      ja_JP: コマンド
+    human_description:
+      en_US: "supported commands: add, delete, list, download"
+      zh_Hans: "支持：查看技能、新增技能、删除技能N、下载技能N"
+      pt_BR: "Gerenciar pacotes de habilidades locais (adicionar/remover/visualizar/baixar)."
+      ja_JP: "ローカルのスキルパッケージを管理（追加/削除/表示/ダウンロード）"
+    llm_description: "supported commands: add, delete, list, download"
+    form: llm
+  - name: files
+    type: files
+    required: false
+    label:
+      en_US: Zip files
+      zh_Hans: Zip压缩包
+      pt_BR: Zip files
+      ja_JP: Zipファイル
+    human_description:
+      en_US: "Zip package(s) for add command."
+      zh_Hans: "新增技能时上传 zip 压缩包"
+      pt_BR: "Zip package(s) for add command."
+      ja_JP: "新增技能 用の zip"
+    llm_description: "Zip package(s) for add command"
+    form: form
+extra:
+  python:
+    source: tools/TM.py
