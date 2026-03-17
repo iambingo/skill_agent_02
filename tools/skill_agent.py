@@ -61,7 +61,18 @@ class SkillAgentTool(Tool):
         memory_turns = int(tool_parameters.get("memory_turns") or 10)
         history_turns = int(tool_parameters.get("history_turns") or 0)
         system_prompt = tool_parameters.get("system_prompt") or "你是一个xxxx"
-        skills_root = _detect_skills_root(tool_parameters.get("skills_root"))
+        project_name = str(tool_parameters.get("project_name") or "").strip()
+        if project_name:
+            _plugin_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            _project_dir = os.path.join(_plugin_root, "skills", project_name)
+            if not os.path.isdir(_project_dir):
+                yield self.create_text_message(
+                    f"❌ 项目「{project_name}」不存在，请先通过技能管理工具创建该项目。\n"
+                )
+                return
+            skills_root = _project_dir
+        else:
+            skills_root = _detect_skills_root(tool_parameters.get("skills_root"))
 
         if not query or not isinstance(query, str):
             yield self.create_text_message("❌缺少 query 参数\n")
