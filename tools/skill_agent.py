@@ -263,6 +263,7 @@ class SkillAgentTool(Tool):
             runtime.get_skill_metadata(preselected_skill_folder)
             # Filter skills index to only expose the preselected skill
             skills_index = {"root": skills_index.get("root"), "skills": [matched]}
+            yield self.create_text_message(f"当前选定skill为：{skill_name_param}\n")
 
         _dbg(
             "start "
