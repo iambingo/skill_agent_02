@@ -456,7 +456,7 @@ class SkillAgentTool(Tool):
                 nonlocal streamed_any
                 if not text:
                     return
-                tagged = "\n【🤖Skill_Agent】\n" + text.strip() + "\n\n"
+                tagged = text.strip() + "\n\n"
                 step = max(1, int(typing_chunk))
                 for i in range(0, len(tagged), step):
                     yield self.create_text_message(tagged[i : i + step])
@@ -534,7 +534,6 @@ class SkillAgentTool(Tool):
                         combined_text_live = "".join(text_parts).strip()
                         if combined_text_live and not saw_tool_calls and should_emit_user_text(combined_text_live):
                             if not emitted_prefix:
-                                yield self.create_text_message("\n【🤖Skill_Agent】\n")
                                 emitted_prefix = True
                             new = combined_text_live[emitted_len:]
                             if new:
