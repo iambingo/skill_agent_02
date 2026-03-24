@@ -16,9 +16,10 @@ from utils.skill_agent_exec import _detect_skills_root
 from utils.skill_agent_schemas import TOOL_SCHEMAS
 
 # ── 入参，改这里 ──────────────────────────────────────────────────
-QUERY      = "帮我搜索一下今天 Python 最新版本是多少"
-SKILL_NAME = "online-search"   # 留空 "" 则让 LLM 自动从 skills 列表里判断
-MAX_STEPS  = 10
+QUERY        = "帮我搜索一下今天 Python 最新版本是多少"
+SKILL_NAME   = "online-search"   # 留空 "" 则让 LLM 自动从 skills 列表里判断
+PROJECT_NAME = ""                # 传了就用 skills/<project_name>/ 作为 skills_root
+MAX_STEPS    = 10
 # ─────────────────────────────────────────────────────────────────
 
 client = OpenAI(
@@ -28,7 +29,14 @@ client = OpenAI(
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
 plugin_root = os.path.dirname(os.path.abspath(__file__))
-skills_root = _detect_skills_root(None)
+
+if PROJECT_NAME:
+    skills_root = os.path.join(plugin_root, "skills", PROJECT_NAME)
+    if not os.path.isdir(skills_root):
+        print(f"❌ 项目「{PROJECT_NAME}」不存在，路径: {skills_root}")
+        sys.exit(1)
+else:
+    skills_root = _detect_skills_root(None)
 session_dir = os.path.join(plugin_root, "temp", f"debug-{uuid.uuid4().hex[:8]}")
 os.makedirs(session_dir, exist_ok=True)
 
