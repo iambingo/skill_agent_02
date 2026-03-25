@@ -4,7 +4,7 @@ import json
 import time
 from typing import Any
 
-from utils.skill_agent_constants import HISTORY_KEY_PREFIX, RESUME_KEY_PREFIX, SESSION_DIR_KEY_PREFIX
+from utils.skill_agent_constants import HISTORY_KEY_PREFIX
 from utils.tools import _safe_get
 
 
@@ -23,16 +23,8 @@ def _get_session_storage_id(session: Any) -> str:
     return "global"
 
 
-def _get_resume_storage_key(session: Any) -> str:
-    return RESUME_KEY_PREFIX + _get_session_storage_id(session)
-
-
 def _get_history_storage_key(session: Any) -> str:
     return HISTORY_KEY_PREFIX + _get_session_storage_id(session)
-
-
-def _get_session_dir_storage_key(session: Any) -> str:
-    return SESSION_DIR_KEY_PREFIX + _get_session_storage_id(session)
 
 
 def _storage_get_text(storage: Any, key: str) -> str:
