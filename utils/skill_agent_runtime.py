@@ -128,7 +128,15 @@ class _AgentRuntime:
             return {"error": "executable_not_found", "exe": missing, "hint": _missing_executable_hint(missing)}
         command = [resolved0] + command[1:]
         command = _rewrite_uploads_paths_to_session_dir(command, session_dir=self.session_dir)
-        cwd = skill_path if not cwd_relative else _safe_join(skill_path, cwd_relative)
+        # Normalize cwd_relative: strip leading slashes and ignore if it resolves to skill_path itself
+        if cwd_relative:
+            cwd_rel_norm = cwd_relative.strip("/").strip("\\")
+            # If the LLM passed the skill name itself as cwd_relative, skip it (skill_path is already there)
+            if cwd_rel_norm == skill_name or cwd_rel_norm == "":
+                cwd_rel_norm = None
+        else:
+            cwd_rel_norm = None
+        cwd = skill_path if not cwd_rel_norm else _safe_join(skill_path, cwd_rel_norm)
         try:
             result = subprocess.run(
                 command,
