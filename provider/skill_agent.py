@@ -7,11 +7,10 @@ from dify_plugin.errors.tool import ToolProviderCredentialValidationError
 class SkillProvider(ToolProvider):
     
     def _validate_credentials(self, credentials: dict[str, Any]) -> None:
-        import os
         try:
-            skills_root = str(credentials.get("skills_root") or "").strip()
-            if skills_root and not os.path.isdir(skills_root):
-                raise ValueError(f"skills_root 路径不存在或不是目录：{skills_root}")
+            """
+            IMPLEMENT YOUR VALIDATION HERE
+            """
         except Exception as e:
             raise ToolProviderCredentialValidationError(str(e))
 

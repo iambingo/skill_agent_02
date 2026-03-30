@@ -58,19 +58,6 @@ identity:
 tools:
   - tools/skill_agent.yaml
   - tools/TM.yaml
-credentials_schema:
-  - name: skills_root
-    type: text-input
-    required: false
-    label:
-      en_US: "Skills Root Path"
-      zh_Hans: "技能包根目录路径"
-    placeholder:
-      en_US: "e.g. /data/skills  (leave empty to use built-in skills/ folder)"
-      zh_Hans: "如 /data/skills，留空则使用插件内置 skills/ 目录"
-    help:
-      en_US: "Absolute path to a persistent directory for storing skill packages. Survives plugin reinstalls."
-      zh_Hans: "技能包的持久化存储目录（绝对路径）。填写后升级/重装插件不影响已上传的技能包。"
 extra:
   python:
     source: provider/skill_agent.py

@@ -62,13 +62,7 @@ class SkillAgentTool(Tool):
                 return
             skills_root = _project_dir
         else:
-            # Priority: tool param > credential > SKILLS_ROOT env var > plugin built-in skills/
-            credential_skills_root = str(
-                (self.runtime.credentials or {}).get("skills_root") or ""
-            ).strip() or None
-            skills_root = _detect_skills_root(
-                tool_parameters.get("skills_root") or credential_skills_root
-            )
+            skills_root = _detect_skills_root(tool_parameters.get("skills_root"))
 
         if not query or not isinstance(query, str):
             yield self.create_text_message("❌缺少 query 参数\n")
