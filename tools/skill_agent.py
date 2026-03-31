@@ -3,6 +3,8 @@ import json
 import os
 import uuid
 from collections.abc import Generator
+from dotenv import load_dotenv
+load_dotenv()
 from typing import Any
 
 from utils.tools import (
@@ -53,8 +55,10 @@ class SkillAgentTool(Tool):
         system_prompt = tool_parameters.get("system_prompt") or "你是一个xxxx"
         project_name = str(tool_parameters.get("project_name") or "").strip()
         if project_name:
-            _plugin_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-            _project_dir = os.path.join(_plugin_root, "skills", project_name)
+            _skills_base = os.environ.get("SKILLS_ROOT", "").strip() or os.path.join(
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "skills"
+            )
+            _project_dir = os.path.join(_skills_base, project_name)
             if not os.path.isdir(_project_dir):
                 yield self.create_text_message(
                     f"❌ 项目「{project_name}」不存在，请先通过技能管理工具创建该项目。\n"

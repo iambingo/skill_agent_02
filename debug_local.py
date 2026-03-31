@@ -11,6 +11,9 @@ python debug_local.py
 import sys, os, json, uuid, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from openai import OpenAI
 from utils.skill_agent_runtime import _AgentRuntime
 from utils.skill_agent_exec import _detect_skills_root, _cleanup_old_temp_sessions
@@ -35,7 +38,8 @@ MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 plugin_root = os.path.dirname(os.path.abspath(__file__))
 
 if PROJECT_NAME:
-    skills_root = os.path.join(plugin_root, "skills", PROJECT_NAME)
+    _skills_base = os.environ.get("SKILLS_ROOT", "").strip() or os.path.join(plugin_root, "skills")
+    skills_root = os.path.join(_skills_base, PROJECT_NAME)
     if not os.path.isdir(skills_root):
         print(f"❌ 项目「{PROJECT_NAME}」不存在，路径: {skills_root}")
         sys.exit(1)
