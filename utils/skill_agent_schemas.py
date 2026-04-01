@@ -56,7 +56,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                 "type": "object",
                 "properties": {
                     "skill_name": {"type": "string"},
-                    "command": {"type": "array", "items": {"type": "string"}},
+                    "command": {"type": "string"},
                     "cwd_relative": {"type": "string"},
                     "auto_install": {"type": "boolean", "default": False},
                 },
@@ -89,9 +89,6 @@ def _validate_tool_arguments(tool_name: str, arguments: Any) -> tuple[bool, str]
             missing.append(key)
             continue
         if isinstance(val, str) and not val.strip():
-            missing.append(key)
-            continue
-        if key == "command" and (not isinstance(val, list) or not val):
             missing.append(key)
             continue
 

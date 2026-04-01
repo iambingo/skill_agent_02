@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 import sys
 from typing import Any
@@ -94,12 +95,14 @@ class _AgentRuntime:
         self,
         *,
         skill_name: str,
-        command: list[str],
+        command: list[str] | str,
         cwd_relative: str | None = None,
         auto_install: bool = False,
     ) -> dict[str, Any]:
         if not self.skills_root:
             return {"error": "skills_root not found"}
+        if isinstance(command, str):
+            command = shlex.split(command)
         if not command:
             return {"error": "command must be a non-empty list"}
         skill_path = _safe_join(self.skills_root, skill_name)
