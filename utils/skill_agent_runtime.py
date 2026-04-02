@@ -131,16 +131,23 @@ class _AgentRuntime:
             return {"error": "executable_not_found", "exe": missing, "hint": _missing_executable_hint(missing)}
         command = [resolved0] + command[1:]
         command = _rewrite_uploads_paths_to_session_dir(command, session_dir=self.session_dir)
-        # Make script path absolute relative to skill_path so cwd doesn't affect script resolution.
-        # e.g. "python Scripts/foo.py" with cwd_relative="Scripts" would otherwise become Scripts/Scripts/foo.py
+        # Resolve script path and cwd together:
+        # If command[1] is a relative path that exists under skill_path, the LLM wrote it
+        # relative to skill_path — so use skill_path as cwd and make the script path absolute.
+        # This prevents double-nesting when the LLM also passes cwd_relative="Scripts" but
+        # the command already contains "Scripts/foo.py".
+        script_resolved_from_skill_path = False
         if len(command) > 1 and not os.path.isabs(command[1]):
             candidate = os.path.normpath(os.path.join(skill_path, command[1]))
             if os.path.isfile(candidate):
                 command = [command[0], candidate] + command[2:]
-        # Normalize cwd_relative: strip leading slashes and ignore if it resolves to skill_path itself
-        if cwd_relative:
+                script_resolved_from_skill_path = True
+        # Normalize cwd_relative: ignore if script was resolved from skill_path (cwd = skill_path),
+        # or if LLM passed the skill name itself as cwd_relative.
+        if script_resolved_from_skill_path:
+            cwd_rel_norm = None
+        elif cwd_relative:
             cwd_rel_norm = cwd_relative.strip("/").strip("\\")
-            # If the LLM passed the skill name itself as cwd_relative, skip it (skill_path is already there)
             if cwd_rel_norm == skill_name or cwd_rel_norm == "":
                 cwd_rel_norm = None
         else:
