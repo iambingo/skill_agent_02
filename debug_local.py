@@ -172,7 +172,7 @@ def dispatch(name: str, arguments: dict):
     if name == "run_skill_command":
         return runtime.run_skill_command(
             skill_name=str(arguments.get("skill_name") or ""),
-            command=arguments.get("command") if isinstance(arguments.get("command"), list) else [],
+            command=arguments.get("command"),
             cwd_relative=str(arguments.get("cwd_relative")) if arguments.get("cwd_relative") else None,
             auto_install=bool(arguments.get("auto_install") or False),
         )
