@@ -40,8 +40,12 @@ def get_file_content(url: str, timeout: int = 30) -> bytes:
 
 
 def get_skills_dir(project_name: str) -> Path:
-    root = Path(__file__).resolve().parent.parent
-    skills_dir = root / "skills" / project_name
+    skills_root = os.environ.get("SKILLS_ROOT", "").strip()
+    if skills_root:
+        root = Path(skills_root)
+    else:
+        root = Path(__file__).resolve().parent.parent / "skills"
+    skills_dir = root / project_name
     skills_dir.mkdir(parents=True, exist_ok=True)
     return skills_dir
 
