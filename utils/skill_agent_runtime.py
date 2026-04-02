@@ -150,6 +150,8 @@ class _AgentRuntime:
             cwd_rel_norm = cwd_relative.strip("/").strip("\\")
             if cwd_rel_norm == skill_name or cwd_rel_norm == "":
                 cwd_rel_norm = None
+            elif cwd_rel_norm.startswith(skill_name + "/") or cwd_rel_norm.startswith(skill_name + "\\"):
+                cwd_rel_norm = cwd_rel_norm[len(skill_name) + 1:]
         else:
             cwd_rel_norm = None
         cwd = skill_path if not cwd_rel_norm else _safe_join(skill_path, cwd_rel_norm)
